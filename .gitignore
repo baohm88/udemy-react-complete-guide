@@ -1,0 +1,11 @@
+# File rác hệ thống macOS
+.DS_Store
+
+# File nén bài tập/khóa học
+*.zip
+
+# Dependencies & Build files của Node.js / React
+node_modules/
+dist/
+.cache/
+package-lock.json
