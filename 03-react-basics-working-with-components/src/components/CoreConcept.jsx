@@ -1,12 +1,12 @@
-import './Coreconcepts.css'
-function Coreconcepts({title, description, image}) {
+import "./CoreConcept.css";
+function CoreConcept({ title, description, image }) {
   return (
     <li>
       <img src={image} alt={title} />
       <h3>{title}</h3>
       <p>{description}</p>
     </li>
-  )
+  );
 }
 
-export default Coreconcepts
+export default CoreConcept;

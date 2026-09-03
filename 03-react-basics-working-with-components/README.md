@@ -10,14 +10,16 @@ Dự án mẫu thực hành các kiến thức nền tảng trong React từ kh�
 src/
 ├── assets/                  # Chứa hình ảnh tĩnh
 ├── components/              # Các UI Components tái sử dụng
-│   ├── Coreconcepts.jsx     # Hiển thị từng card Core Concept
-│   ├── Coreconcepts.css     # Style cho Core Concepts
+│   ├── CoreConcepts.jsx     # Section chứa danh sách Core Concepts
+│   ├── CoreConcept.jsx      # Từng item Card Core Concept
+│   ├── CoreConcept.css      # Style cho Core Concept
+│   ├── Examples.jsx         # Section chứa nội dung Examples và Tabs
 │   ├── Header.jsx           # Header của ứng dụng
 │   ├── Header.css           # Style cho Header
-│   ├── TabButton.jsx        # Nút tab tuỳ biến sử dụng prop children
-│   └── Card.jsx             # Component bọc nội dung (Container/Wrapper)
+│   ├── Section.jsx          # Wrapper component cho các thẻ <section>
+│   └── TabButton.jsx        # Nút tab tuỳ biến sử dụng Forwarded Props
 ├── data.js                  # Dữ liệu mẫu (CORE_CONCEPTS, EXAMPLES)
-├── App.jsx                  # Component gốc kết nối toàn bộ logic
+├── App.jsx                  # Component gốc kết nối toàn bộ layout
 ├── index.css                # Style chung toàn ứng dụng
 └── index.jsx                # Entry point render ứng dụng vào DOM
 ```
@@ -70,21 +72,31 @@ Props (Properties) là cơ chế truyền dữ liệu từ component cha xuống
   ```
 
 * **Special Prop `children` (Component Composition):**
-  Cho phép truyền nội dung lồng nhau giữa thẻ mở và thẻ đóng của component:
+  Cho phép truyền nội dung lồng nhau giữa thẻ mở và thẻ đóng của component.
+
+* **Forwarding Props / Proxy Props Pattern (`...props`):**
+  Truyền toàn bộ các props còn lại (như `id`, `className`, `onClick`, `disabled`,...) trực tiếp vào phần tử JSX gốc:
   ```jsx
-  // Định nghĩa
-  export default function TabButton({ children, onSelect, isSelected }) {
+  // Section.jsx
+  export default function Section({ title, children, ...props }) {
+    return (
+      <section {...props}>
+        <h2>{title}</h2>
+        {children}
+      </section>
+    );
+  }
+
+  // TabButton.jsx
+  export default function TabButton({ children, isSelected, ...props }) {
     return (
       <li>
-        <button className={isSelected ? "active" : undefined} onClick={onSelect}>
+        <button className={isSelected ? "active" : undefined} {...props}>
           {children}
         </button>
       </li>
     );
   }
-
-  // Sử dụng
-  <TabButton onSelect={...}>Components</TabButton>
   ```
 
 ---
@@ -93,8 +105,11 @@ Props (Properties) là cơ chế truyền dữ liệu từ component cha xuống
 * Gán sự kiện trực tiếp vào thẻ JSX qua thuộc tính `onClick`, `onChange`,...
 * Truyền tham số vào hàm xử lý sự kiện thông qua arrow function:
   ```jsx
-  <TabButton onSelect={() => handleSelect("components")}>
-    Components
+  <TabButton
+    isSelected={selectedTopic === topic}
+    onClick={() => handleSelect(topic)}
+  >
+    {EXAMPLES[topic].title}
   </TabButton>
   ```
 
