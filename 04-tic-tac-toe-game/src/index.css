@@ -57,6 +57,72 @@ h1 {
   position: relative;
 }
 
+#scoreboard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  border: 1px solid rgba(246, 227, 90, 0.2);
+  flex-wrap: wrap;
+}
+
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 5.5rem;
+}
+
+.score-label {
+  font-size: 0.8rem;
+  color: #c3ba78;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.score-value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #ebe7ef;
+}
+
+.score-x .score-value {
+  color: #f6e35a;
+}
+
+.score-o .score-value {
+  color: #f8ca31;
+}
+
+.score-draw .score-value {
+  color: #9b957a;
+}
+
+.reset-scores-btn {
+  background: none;
+  border: 1px solid rgba(246, 227, 90, 0.4);
+  color: #c3ba78;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease-in-out;
+  margin-left: 0.5rem;
+}
+
+.reset-scores-btn:hover {
+  background: rgba(246, 227, 90, 0.15);
+  color: #f6e35a;
+  border-color: #f6e35a;
+}
+
 #players {
   list-style: none;
   padding: 0;
@@ -188,6 +254,16 @@ ol {
   cursor: pointer;
   font-family: 'Caprasimo', cursive;
   padding: 1rem;
+  transition: all 0.3s ease-in-out;
+}
+
+#game-board button.highlight {
+  background: #fcd256;
+  color: #383624;
+  box-shadow: 0 0 25px rgba(252, 210, 86, 0.9);
+  animation: pulse 1.5s infinite ease-in-out;
+  transform: scale(1.05);
+  z-index: 1;
 }
 
 #game-over {
@@ -200,7 +276,9 @@ ol {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: rgba(40, 38, 23, 0.95);
+  background-color: rgba(40, 38, 23, 0.85);
+  backdrop-filter: blur(3px);
+  z-index: 10;
   animation: pop-in 0.5s cubic-bezier(0.68, -0.55, 0.65, 0.52) forwards;
 }
 

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GameBoard from "./components/GameBoard";
 import GameOver from "./components/GameOver";
 import Log from "./components/Log";
 import Player from "./components/Player";
+import ScoreBoard from "./components/ScoreBoard";
 import { WINNING_COMBINATIONS } from "./winning-combinations";
 
 const PLAYERS = {
@@ -53,39 +54,73 @@ const deriveWinner = (gameBoard, players) => {
       firstSquareSymbol === secondSquareSymbol &&
       firstSquareSymbol === thirdSquareSymbol
     ) {
-      return players[firstSquareSymbol];
+      return {
+        winner: players[firstSquareSymbol],
+        winningSquares: combination,
+      };
     }
   }
 
-  return null;
+  return { winner: null, winningSquares: [] };
 };
 
 function App() {
   const [gameTurns, setGameTurns] = useState([]);
   const [players, setPlayers] = useState(PLAYERS);
+  const [scores, setScores] = useState({ X: 0, O: 0, draws: 0 });
+  const [showGameOver, setShowGameOver] = useState(false);
 
   const activePlayer = deriveActivePlayer(gameTurns);
   const gameBoard = deriveGameBoard(gameTurns);
-  const winner = deriveWinner(gameBoard, players);
+  const { winner, winningSquares } = deriveWinner(gameBoard, players);
   const hasDraw = gameTurns.length === 9 && !winner;
+
+  useEffect(() => {
+    if (winner || hasDraw) {
+      const timer = setTimeout(() => {
+        setShowGameOver(true);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowGameOver(false);
+    }
+  }, [winner, hasDraw]);
 
   const handleSelectSquare = (rowIndex, colIndex) => {
     if (winner || hasDraw) return; // Block click if game over
 
-    setGameTurns((prevTurns) => {
-      const currentPlayer = deriveActivePlayer(prevTurns);
+    const currentPlayer = deriveActivePlayer(gameTurns);
+    const updatedTurns = [
+      { square: { row: rowIndex, col: colIndex }, player: currentPlayer },
+      ...gameTurns,
+    ];
 
-      const updatedTurns = [
-        { square: { row: rowIndex, col: colIndex }, player: currentPlayer },
-        ...prevTurns,
-      ];
+    const updatedBoard = deriveGameBoard(updatedTurns);
+    const { winner: roundWinner } = deriveWinner(updatedBoard, players);
 
-      return updatedTurns;
-    });
+    setGameTurns(updatedTurns);
+
+    if (roundWinner) {
+      setScores((prevScores) => ({
+        ...prevScores,
+        [currentPlayer]: prevScores[currentPlayer] + 1,
+      }));
+    } else if (updatedTurns.length === 9) {
+      setScores((prevScores) => ({
+        ...prevScores,
+        draws: prevScores.draws + 1,
+      }));
+    }
   };
 
   const handleRestart = () => {
     setGameTurns([]);
+    setShowGameOver(false);
+  };
+
+  const handleResetScores = () => {
+    setScores({ X: 0, O: 0, draws: 0 });
   };
 
   const handlePlayerNameChange = (symbol, newName) => {
@@ -97,6 +132,11 @@ function App() {
   return (
     <main>
       <div id="game-container">
+        <ScoreBoard
+          scores={scores}
+          players={players}
+          onResetScores={handleResetScores}
+        />
         <ol id="players" className="highlight-player">
           <Player
             initialName={PLAYERS.X}
@@ -111,10 +151,14 @@ function App() {
             onChangeName={handlePlayerNameChange}
           />
         </ol>
-        {(winner || hasDraw) && (
+        <GameBoard
+          onSelectSquare={handleSelectSquare}
+          board={gameBoard}
+          winningSquares={winningSquares}
+        />
+        {showGameOver && (
           <GameOver winner={winner} onRestart={handleRestart} />
         )}
-        <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard} />
       </div>
       <Log turns={gameTurns} />
     </main>
