@@ -66,9 +66,31 @@ const deriveWinner = (gameBoard, players) => {
 
 function App() {
   const [gameTurns, setGameTurns] = useState([]);
-  const [players, setPlayers] = useState(PLAYERS);
-  const [scores, setScores] = useState({ X: 0, O: 0, draws: 0 });
+  const [players, setPlayers] = useState(() => {
+    try {
+      const saved = localStorage.getItem("tic-tac-toe-players");
+      return saved ? JSON.parse(saved) : PLAYERS;
+    } catch {
+      return PLAYERS;
+    }
+  });
+  const [scores, setScores] = useState(() => {
+    try {
+      const saved = localStorage.getItem("tic-tac-toe-scores");
+      return saved ? JSON.parse(saved) : { X: 0, O: 0, draws: 0 };
+    } catch {
+      return { X: 0, O: 0, draws: 0 };
+    }
+  });
   const [showGameOver, setShowGameOver] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("tic-tac-toe-scores", JSON.stringify(scores));
+  }, [scores]);
+
+  useEffect(() => {
+    localStorage.setItem("tic-tac-toe-players", JSON.stringify(players));
+  }, [players]);
 
   const activePlayer = deriveActivePlayer(gameTurns);
   const gameBoard = deriveGameBoard(gameTurns);
@@ -119,6 +141,11 @@ function App() {
     setShowGameOver(false);
   };
 
+  const handleUndo = () => {
+    if (gameTurns.length === 0 || winner || hasDraw) return;
+    setGameTurns((prevTurns) => prevTurns.slice(1));
+  };
+
   const handleResetScores = () => {
     setScores({ X: 0, O: 0, draws: 0 });
   };
@@ -139,18 +166,28 @@ function App() {
         />
         <ol id="players" className="highlight-player">
           <Player
-            initialName={PLAYERS.X}
+            initialName={players.X}
             symbol="X"
             isActive={activePlayer === "X"}
             onChangeName={handlePlayerNameChange}
           />
           <Player
-            initialName={PLAYERS.O}
+            initialName={players.O}
             symbol="O"
             isActive={activePlayer === "O"}
             onChangeName={handlePlayerNameChange}
           />
         </ol>
+        <div id="game-controls">
+          <button
+            type="button"
+            className="undo-btn"
+            onClick={handleUndo}
+            disabled={gameTurns.length === 0 || !!winner || hasDraw}
+          >
+            ↩ Undo Move
+          </button>
+        </div>
         <GameBoard
           onSelectSquare={handleSelectSquare}
           board={gameBoard}

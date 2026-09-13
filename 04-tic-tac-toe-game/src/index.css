@@ -225,6 +225,40 @@ ol {
   animation: pulse-text-size 2s infinite ease-out;
 }
 
+#game-controls {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.undo-btn {
+  background: none;
+  border: 1px solid rgba(246, 227, 90, 0.5);
+  color: #f6e35a;
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease-in-out;
+}
+
+.undo-btn:hover:not(:disabled) {
+  background: rgba(246, 227, 90, 0.15);
+  border-color: #f6e35a;
+  box-shadow: 0 0 10px rgba(246, 227, 90, 0.3);
+  transform: translateY(-1px);
+}
+
+.undo-btn:disabled {
+  border-color: rgba(235, 231, 239, 0.15);
+  color: rgba(235, 231, 239, 0.25);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 #game-board {
   display: flex;
   flex-wrap: wrap;
