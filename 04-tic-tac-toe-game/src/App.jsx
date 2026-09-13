@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import confetti from "canvas-confetti";
 import GameBoard from "./components/GameBoard";
 import GameOver from "./components/GameOver";
 import Log from "./components/Log";
@@ -7,6 +8,12 @@ import ScoreBoard from "./components/ScoreBoard";
 import GameModeSelector from "./components/GameModeSelector";
 import { WINNING_COMBINATIONS } from "./winning-combinations";
 import { getRandomMove, getBestMove } from "./ai";
+import {
+  playMoveSound,
+  playWinSound,
+  playDrawSound,
+  playUndoSound,
+} from "./sound";
 
 const PLAYERS = {
   X: "Player 1",
@@ -18,6 +25,41 @@ const INITIAL_GAME_BOARD = [
   [null, null, null],
   [null, null, null],
 ];
+
+function triggerWinConfetti() {
+  const end = Date.now() + 1000;
+  const colors = ["#fcd256", "#f8ca31", "#e1dec7", "#ffffff"];
+
+  (function frame() {
+    confetti({
+      particleCount: 4,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.7 },
+      colors: colors,
+    });
+    confetti({
+      particleCount: 4,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.7 },
+      colors: colors,
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  })();
+}
+
+function triggerDrawConfetti() {
+  confetti({
+    particleCount: 60,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ["#aca788", "#e1dec7", "#fcd256"],
+  });
+}
 
 const deriveActivePlayer = (gameTurns) => {
   let currentPlayer = "X";
@@ -77,6 +119,17 @@ function App() {
     }
   });
   const [isBotThinking, setIsBotThinking] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
+    try {
+      const saved = localStorage.getItem("tic-tac-toe-sound");
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch {
+      return true;
+    }
+  });
+
+  const soundEnabledRef = useRef(isSoundEnabled);
+  soundEnabledRef.current = isSoundEnabled;
 
   const [players, setPlayers] = useState(() => {
     try {
@@ -107,6 +160,14 @@ function App() {
   useEffect(() => {
     localStorage.setItem("tic-tac-toe-mode", gameMode);
   }, [gameMode]);
+
+  useEffect(() => {
+    localStorage.setItem("tic-tac-toe-sound", JSON.stringify(isSoundEnabled));
+  }, [isSoundEnabled]);
+
+  const toggleSound = () => {
+    setIsSoundEnabled((prev) => !prev);
+  };
 
   const displayedPlayers = {
     X: players.X,
@@ -152,6 +213,14 @@ function App() {
 
   useEffect(() => {
     if (winner || hasDraw) {
+      if (winner) {
+        playWinSound(!soundEnabledRef.current);
+        triggerWinConfetti();
+      } else if (hasDraw) {
+        playDrawSound(!soundEnabledRef.current);
+        triggerDrawConfetti();
+      }
+
       const timer = setTimeout(() => {
         setShowGameOver(true);
       }, 1000);
@@ -164,6 +233,8 @@ function App() {
 
   const handleSelectSquare = (rowIndex, colIndex) => {
     if (winner || hasDraw) return; // Block click if game over
+
+    playMoveSound(!soundEnabledRef.current);
 
     const currentPlayer = deriveActivePlayer(gameTurns);
     const updatedTurns = [
@@ -208,6 +279,8 @@ function App() {
   const handleUndo = () => {
     if (gameTurns.length === 0 || winner || hasDraw || isBotThinking) return;
 
+    playUndoSound(!soundEnabledRef.current);
+
     if (gameMode !== "pvp") {
       // Khi chơi với Máy: lùi 2 nước để trả lại lượt cho Người chơi
       if (gameTurns.length >= 2) {
@@ -233,10 +306,20 @@ function App() {
   return (
     <main>
       <div id="game-container">
-        <GameModeSelector
-          gameMode={gameMode}
-          onChangeMode={handleModeChange}
-        />
+        <div className="header-controls">
+          <GameModeSelector
+            gameMode={gameMode}
+            onChangeMode={handleModeChange}
+          />
+          <button
+            type="button"
+            className="sound-toggle-btn"
+            onClick={toggleSound}
+            title={isSoundEnabled ? "Mute Sound" : "Enable Sound"}
+          >
+            {isSoundEnabled ? "🔊 Sound ON" : "🔇 Sound OFF"}
+          </button>
+        </div>
         <ScoreBoard
           scores={scores}
           players={displayedPlayers}
