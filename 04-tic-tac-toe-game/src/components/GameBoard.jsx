@@ -2,6 +2,7 @@ export default function GameBoard({
   onSelectSquare,
   board,
   winningSquares = [],
+  disabled = false,
 }) {
   return (
     <ol id="game-board">
@@ -18,7 +19,7 @@ export default function GameBoard({
                 <li key={colIndex}>
                   <button
                     onClick={() => onSelectSquare(rowIndex, colIndex)}
-                    disabled={playerSymbol !== null}
+                    disabled={playerSymbol !== null || disabled}
                     className={isWinningSquare ? "highlight" : undefined}
                   >
                     {playerSymbol}
